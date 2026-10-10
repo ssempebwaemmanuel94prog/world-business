@@ -3,8 +3,8 @@ const path = require("path");
 const Database = require("better-sqlite3");
 
 const app = express();
-const PORT = 3000;
-const HOST = "127.0.0.1";
+const PORT = process.env.PORT || 3000;
+const HOST = "0.0.0.0";
 
 const db = new Database(
   path.join(__dirname, "worldbusiness.db")
