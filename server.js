@@ -51,6 +51,22 @@ app.get("/businesses.html", (req, res) => {
   res.sendFile(path.join(__dirname, "businesses.html"));
 });
 
+app.get("/terms.html", (req, res) => {
+  res.sendFile(path.join(__dirname, "terms.html"));
+});
+
+app.get("/privacy.html", (req, res) => {
+  res.sendFile(path.join(__dirname, "privacy.html"));
+});
+
+app.get("/marketplace-rules.html", (req, res) => {
+  res.sendFile(path.join(__dirname, "marketplace-rules.html"));
+});
+
+app.get("/contact.html", (req, res) => {
+  res.sendFile(path.join(__dirname, "contact.html"));
+});
+
 app.get("/api/businesses", (req, res) => {
   try {
     const businesses = db.prepare(`
