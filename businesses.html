@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Discover businesses around the world with WorldLink Business.">
+  <title>Business Directory | WorldLink Business</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f7fb;
+      color: #243047;
+    }
+
+    header {
+      background: #102a56;
+      color: white;
+      padding: 24px 16px;
+      text-align: center;
+    }
+
+    header h1 {
+      margin: 0 0 10px;
+    }
+
+    header p {
+      margin: 0;
+      line-height: 1.5;
+    }
+
+    nav {
+      background: #ffffff;
+      padding: 15px;
+      text-align: center;
+      border-bottom: 1px solid #ddd;
+    }
+
+    nav a {
+      display: inline-block;
+      margin: 5px 10px;
+      color: #1456a0;
+      font-weight: bold;
+      text-decoration: none;
+    }
+
+    main {
+      max-width: 1000px;
+      margin: 25px auto;
+      padding: 0 15px;
+    }
+
+    .search-box {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px #0000000d;
+      margin-bottom: 20px;
+    }
+
+    input {
+      width: 100%;
+      padding: 13px;
+      border: 1px solid #ccd3df;
+      border-radius: 7px;
+      font-size: 16px;
+    }
+
+    #status {
+      margin: 15px 0;
+      color: #526176;
+    }
+
+    #business-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 18px;
+    }
+
+    .business-card {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      border: 1px solid #e1e6ef;
+      box-shadow: 0 3px 10px #00000008;
+      overflow-wrap: anywhere;
+    }
+
+    .business-card h2 {
+      color: #102a56;
+      margin-top: 0;
+    }
+
+    .category {
+      display: inline-block;
+      background: #e5efff;
+      color: #1456a0;
+      padding: 6px 10px;
+      border-radius: 20px;
+      font-size: 13px;
+    }
+
+    .business-card p {
+      line-height: 1.6;
+    }
+
+    .website {
+      color: #1456a0;
+      font-weight: bold;
+    }
+
+    footer {
+      text-align: center;
+      padding: 25px 15px;
+      color: #667085;
+    }
+
+    .button {
+      display: inline-block;
+      background: #1456a0;
+      color: white;
+      padding: 12px 16px;
+      border-radius: 7px;
+      text-decoration: none;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>🌍 WorldLink Business</h1>
+    <p>Discover businesses. Connect with opportunities worldwide.</p>
+  </header>
+
+  <nav>
+    <a href="/">Home</a>
+    <a href="/register.html">Register Your Business</a>
+    <a href="/businesses.html">Business Directory</a>
+  </nav>
+
+  <main>
+    <section class="search-box">
+      <h2>Explore Businesses</h2>
+      <p>Search by business name, country, city, or category.</p>
+
+      <input
+        type="search"
+        id="search"
+        placeholder="Search businesses..."
+        aria-label="Search businesses"
+      >
+<div class="filters">
+  <select id="country-filter" aria-label="Filter by country">
+    <option value="">All countries</option>
+  </select>
+
+  <select id="city-filter" aria-label="Filter by city">
+    <option value="">All cities</option>
+  </select>
+
+  <select id="category-filter" aria-label="Filter by category">
+    <option value="">All categories</option>
+  </select>
+</div>
+      <p id="status" role="status">Loading businesses...</p>
+    </section>
+
+    <section id="business-list" aria-label="Registered businesses"></section>
+
+    <p>
+      Want customers to discover your business?
+      <a class="button" href="/register.html">Register Your Business</a>
+    </p>
+  </main>
+
+  <footer>
+    &copy; <span id="year"></span> WorldLink Business.
+    Connecting businesses worldwide.
+  </footer>
+
+  <script>
+    const list = document.getElementById("business-list");
+    const search = document.getElementById("search");
+    const status = document.getElementById("status");
+
+    document.getElementById("year").textContent =
+      new Date().getFullYear();
+
+    let businesses = [];
+
+    function safeWebsite(value) {
+      if (!value) return "";
+
+      try {
+        const url = new URL(value);
+
+        if (url.protocol === "https:" || url.protocol === "http:") {
+          return url.href;
+        }
+      } catch (error) {
+        return "";
+      }
+
+      return "";
+    }
+
+
+
+function populateFilter(selectId, values, defaultLabel) {
+  const select = document.getElementById(selectId);
+  const previousValue = select.value;
+
+  select.replaceChildren();
+
+  const firstOption = document.createElement("option");
+  firstOption.value = "";
+  firstOption.textContent = defaultLabel;
+  select.appendChild(firstOption);
+
+  [...new Set(values.filter(Boolean))]
+    .sort((a, b) => a.localeCompare(b))
+    .forEach(value => {
+      const option = document.createElement("option");
+      option.value = value;
+      option.textContent = value;
+      select.appendChild(option);
+    });
+
+  if ([...select.options].some(option => option.value === previousValue)) {
+    select.value = previousValue;
+  }
+}
+
+function renderBusinesses() {
+  const query = search.value.trim().toLowerCase();
+    const country = document.getElementById("country-filter").value;
+  const city = document.getElementById("city-filter").value;
+  const category = document.getElementById("category-filter").value;
+  const filtered = businesses.filter(business => {
+    const searchable = [
+      business.business_name,
+      business.country,
+      business.city,
+      business.category,
+      business.description
+    ].join(" ").toLowerCase();
+
+    return searchable.includes(query)
+      && (!country || business.country === country)
+      && (!city || business.city === city)
+      && (!category || business.category === category);
+  });
+
+  list.replaceChildren();
+
+  if (filtered.length === 0) {
+    status.textContent = businesses.length === 0
+      ? "No businesses have been registered yet."
+      : "No businesses match your search or filters.";
+    return;
+  }
+
+  status.textContent = "Showing " + filtered.length + " business(es).";
+
+  filtered.forEach(business => {
+    const card = document.createElement("article");
+    card.className = "business-card";
+
+    const title = document.createElement("h2");
+    title.textContent = business.business_name;
+
+    const categoryLabel = document.createElement("span");
+    categoryLabel.className = "category";
+    categoryLabel.textContent = business.category;
+
+    const location = document.createElement("p");
+    location.textContent = "📍 " + business.city + ", " + business.country;
+
+    const description = document.createElement("p");
+    description.textContent = business.description;
+
+    card.append(title, categoryLabel, location, description);
+
+    const website = safeWebsite(business.website);
+
+    if (website) {
+      const link = document.createElement("a");
+      link.className = "website";
+      link.href = website;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.textContent = "Visit business website";
+      card.appendChild(link);
+    }
+
+    list.appendChild(card);
+  });
+}
+    async function loadBusinesses() {
+      try {
+        const response = await fetch("/api/businesses");
+
+        if (!response.ok) {
+          throw new Error("Could not load business listings.");
+        }
+
+        const data = await response.json();
+               businesses = Array.isArray(data.businesses)
+          ? data.businesses
+          : [];
+
+        populateFilter(
+          "country-filter",
+          businesses.map(b => b.country),
+          "All countries"
+        );
+
+        populateFilter(
+          "city-filter",
+          businesses.map(b => b.city),
+          "All cities"
+        );
+
+        populateFilter(
+          "category-filter",
+          businesses.map(b => b.category),
+          "All categories"
+        );        renderBusinesses();
+      } catch (error) {
+        status.textContent =
+          "Unable to load businesses. Please try again later.";
+      }
+    }
+
+    search.addEventListener("input", renderBusinesses);
+document.getElementById("country-filter")
+  .addEventListener("change", renderBusinesses);
+
+document.getElementById("city-filter")
+  .addEventListener("change", renderBusinesses);
+
+document.getElementById("category-filter")
+  .addEventListener("change", renderBusinesses);
+    loadBusinesses();
+  </script>
+</body>
+</html>

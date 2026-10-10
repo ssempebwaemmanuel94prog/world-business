@@ -1,0 +1,10 @@
+node_modules/
+worldbusiness.db
+worldbusiness.db-shm
+worldbusiness.db-wal
+worldlink.db
+*.backup
+backup/
+.env
+.env.*
+!.env.example
