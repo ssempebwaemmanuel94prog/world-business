@@ -175,6 +175,24 @@
         </div>
 
         <div class="field">
+          <label for="businessEmail">Business Email (optional)</label>
+          <input type="email" id="businessEmail" name="businessEmail"
+                 maxlength="254" placeholder="business@example.com">
+        </div>
+
+        <div class="field">
+          <label for="businessPhone">Business Phone (optional)</label>
+          <input type="tel" id="businessPhone" name="businessPhone"
+                 maxlength="40" placeholder="Enter your business phone number">
+        </div>
+
+        <div class="field">
+          <label for="contactPerson">Contact Person (optional)</label>
+          <input type="text" id="contactPerson" name="contactPerson"
+                 maxlength="120" placeholder="Name of your business contact">
+        </div>
+
+        <div class="field">
           <label for="website">Website (optional)</label>
 
           <input
@@ -224,7 +242,10 @@ form.addEventListener("submit", async function (event) {
     city: document.getElementById("city").value.trim(),
     category: document.getElementById("category").value,
     description: document.getElementById("description").value.trim(),
-    website: document.getElementById("website").value.trim()
+    website: document.getElementById("website").value.trim(),
+    businessEmail: document.getElementById("businessEmail").value.trim(),
+    businessPhone: document.getElementById("businessPhone").value.trim(),
+    contactPerson: document.getElementById("contactPerson").value.trim()
   };
 
   try {

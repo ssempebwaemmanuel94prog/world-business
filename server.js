@@ -24,6 +24,22 @@ db.exec(`
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
   )
 `);
+// Safely add contact fields to databases created by older versions.
+const existingColumns = new Set(
+  db.prepare("PRAGMA table_info(businesses)").all().map(column => column.name)
+);
+
+for (const [column, definition] of [
+  ["business_email", "TEXT"],
+  ["business_phone", "TEXT"],
+  ["contact_person", "TEXT"]
+]) {
+  if (!existingColumns.has(column)) {
+    db.exec(`ALTER TABLE businesses ADD COLUMN ${column} ${definition}`);
+    console.log(`Database migration: added ${column}`);
+  }
+}
+
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json({ limit: "20kb" }));
 app.use(express.urlencoded({
@@ -83,7 +99,9 @@ app.get("/api/businesses", (req, res) => {
   try {
     const businesses = db.prepare(`
       SELECT id, business_name, country, city,
-             category, description, website, created_at
+             category, description, website,
+             business_email, business_phone, contact_person,
+             created_at
       FROM businesses
       ORDER BY id DESC
     `).all();
@@ -109,8 +127,41 @@ if (!req.body || typeof req.body !== "object" || Array.isArray(req.body)) {
     city,
     category,
     description,
-    website
+    website,
+    businessEmail,
+    businessPhone,
+    contactPerson
   } = req.body;
+
+  const optionalFields = [
+    ["Business email", businessEmail, 254],
+    ["Business phone", businessPhone, 40],
+    ["Contact person", contactPerson, 120]
+  ];
+
+  for (const [label, value, maxLength] of optionalFields) {
+    if (
+      value !== undefined &&
+      value !== null &&
+      (
+        typeof value !== "string" ||
+        value.trim().length > maxLength
+      )
+    ) {
+      return res.status(400).json({
+        error: label + " is invalid or too long."
+      });
+    }
+  }
+
+  if (
+    businessEmail &&
+    !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(businessEmail.trim())
+  ) {
+    return res.status(400).json({
+      error: "Please provide a valid business email address."
+    });
+  }
 
   const fields = [
     businessName,
@@ -173,15 +224,21 @@ if (!req.body || typeof req.body !== "object" || Array.isArray(req.body)) {
         city,
         category,
         description,
-        website
-      ) VALUES (?, ?, ?, ?, ?, ?)
+        website,
+        business_email,
+        business_phone,
+        contact_person
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       businessName.trim(),
       country.trim(),
       city.trim(),
       category.trim(),
       description.trim(),
-      website ? website.trim() : null
+      website ? website.trim() : null,
+      businessEmail ? businessEmail.trim() : null,
+      businessPhone ? businessPhone.trim() : null,
+      contactPerson ? contactPerson.trim() : null
     );
 
     res.status(201).json({

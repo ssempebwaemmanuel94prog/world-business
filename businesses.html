@@ -299,6 +299,24 @@ function renderBusinesses() {
 
     card.append(title, categoryLabel, location, description);
 
+    if (business.contact_person) {
+      const contact = document.createElement("p");
+      contact.textContent = "Contact person: " + business.contact_person;
+      card.appendChild(contact);
+    }
+
+    if (business.business_email) {
+      const email = document.createElement("p");
+      email.textContent = "Business email: " + business.business_email;
+      card.appendChild(email);
+    }
+
+    if (business.business_phone) {
+      const phone = document.createElement("p");
+      phone.textContent = "Business phone: " + business.business_phone;
+      card.appendChild(phone);
+    }
+
     const website = safeWebsite(business.website);
 
     if (website) {
