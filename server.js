@@ -24,7 +24,7 @@ db.exec(`
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
   )
 `);
-
+app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json({ limit: "20kb" }));
 app.use(express.urlencoded({
   extended: false,
