@@ -1,43 +1,34 @@
 const express = require("express");
 const path = require("path");
-const Database = require("better-sqlite3");
+const { Pool } = require("pg");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const HOST = "0.0.0.0";
 
-const db = new Database(
-  path.join(__dirname, "worldbusiness.db")
-);
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
+});
 
-db.pragma("journal_mode = WAL");
+async function initializeDatabase() {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS businesses (
+      id BIGSERIAL PRIMARY KEY,
+      business_name TEXT NOT NULL,
+      country TEXT NOT NULL,
+      city TEXT NOT NULL,
+      category TEXT NOT NULL,
+      description TEXT NOT NULL,
+      website TEXT,
+      business_email TEXT,
+      business_phone TEXT,
+      contact_person TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
 
-db.exec(`
-  CREATE TABLE IF NOT EXISTS businesses (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    business_name TEXT NOT NULL,
-    country TEXT NOT NULL,
-    city TEXT NOT NULL,
-    category TEXT NOT NULL,
-    description TEXT NOT NULL,
-    website TEXT,
-    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-  )
-`);
-// Safely add contact fields to databases created by older versions.
-const existingColumns = new Set(
-  db.prepare("PRAGMA table_info(businesses)").all().map(column => column.name)
-);
-
-for (const [column, definition] of [
-  ["business_email", "TEXT"],
-  ["business_phone", "TEXT"],
-  ["contact_person", "TEXT"]
-]) {
-  if (!existingColumns.has(column)) {
-    db.exec(`ALTER TABLE businesses ADD COLUMN ${column} ${definition}`);
-    console.log(`Database migration: added ${column}`);
-  }
+  console.log("Neon PostgreSQL businesses table is ready.");
 }
 
 app.use(express.static(path.join(__dirname, "public")));
@@ -95,18 +86,18 @@ app.get("/contact.html", (req, res) => {
   res.sendFile(path.join(__dirname, "contact.html"));
 });
 
-app.get("/api/businesses", (req, res) => {
+app.get("/api/businesses", async (req, res) => {
   try {
-    const businesses = db.prepare(`
+    const result = await pool.query(`
       SELECT id, business_name, country, city,
              category, description, website,
              business_email, business_phone, contact_person,
              created_at
       FROM businesses
       ORDER BY id DESC
-    `).all();
+    `);
 
-    res.json({ businesses });
+    res.json({ businesses: result.rows });
   } catch (error) {
     console.error("Business listing error:", error.message);
 
@@ -116,12 +107,14 @@ app.get("/api/businesses", (req, res) => {
   }
 });
 
-app.post("/api/businesses", (req, res) => {
-if (!req.body || typeof req.body !== "object" || Array.isArray(req.body)) {
-  return res.status(400).json({
-    error: "Please submit valid business information."
-  });
-}  const {
+app.post("/api/businesses", async (req, res) => {
+  if (!req.body || typeof req.body !== "object" || Array.isArray(req.body)) {
+    return res.status(400).json({
+      error: "Please submit valid business information."
+    });
+  }
+
+  const {
     businessName,
     country,
     city,
@@ -217,8 +210,8 @@ if (!req.body || typeof req.body !== "object" || Array.isArray(req.body)) {
   }
 
   try {
-    const result = db.prepare(`
-      INSERT INTO businesses (
+    const result = await pool.query(
+      `INSERT INTO businesses (
         business_name,
         country,
         city,
@@ -228,22 +221,24 @@ if (!req.body || typeof req.body !== "object" || Array.isArray(req.body)) {
         business_email,
         business_phone,
         contact_person
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(
-      businessName.trim(),
-      country.trim(),
-      city.trim(),
-      category.trim(),
-      description.trim(),
-      website ? website.trim() : null,
-      businessEmail ? businessEmail.trim() : null,
-      businessPhone ? businessPhone.trim() : null,
-      contactPerson ? contactPerson.trim() : null
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      RETURNING id`,
+      [
+        businessName.trim(),
+        country.trim(),
+        city.trim(),
+        category.trim(),
+        description.trim(),
+        website ? website.trim() : null,
+        businessEmail ? businessEmail.trim() : null,
+        businessPhone ? businessPhone.trim() : null,
+        contactPerson ? contactPerson.trim() : null
+      ]
     );
 
     res.status(201).json({
       message: "Business registered successfully.",
-      businessId: result.lastInsertRowid
+      businessId: result.rows[0].id
     });
   } catch (error) {
     console.error("Registration error:", error.message);
@@ -254,6 +249,21 @@ if (!req.body || typeof req.body !== "object" || Array.isArray(req.body)) {
   }
 });
 
-app.listen(PORT, HOST, () => {
-  console.log(`Backend running at http://${HOST}:${PORT}`);
-});
+async function startServer() {
+  try {
+    if (!process.env.DATABASE_URL) {
+      throw new Error("DATABASE_URL environment variable is missing.");
+    }
+
+    await initializeDatabase();
+
+    app.listen(PORT, HOST, () => {
+      console.log(`Backend running at http://${HOST}:${PORT}`);
+    });
+  } catch (error) {
+    console.error("Server startup failed:", error.message);
+    process.exit(1);
+  }
+}
+
+startServer();
