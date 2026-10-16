@@ -38,7 +38,7 @@ async function initializeDatabase() {
 app.use(express.static(path.join(__dirname, "public")));
 
 // WorldLink Business mobile web app
-app.get("/mobile", (req, res) => {
+app.get(/^\/mobile$/, (req, res) => {
   res.redirect(308, "/mobile/");
 });
 
