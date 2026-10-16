@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#102a56">
+  <meta name="description" content="Discover businesses, explore opportunities, and promote your business worldwide with WorldLink Business.">
+  <title>WorldLink Business</title>
+  <link rel="manifest" href="/mobile/manifest.json">
+  <link rel="icon" href="/images/worldlink-background.png">
+  <style>
+    :root {
+      --navy: #102a56;
+      --blue: #174b8f;
+      --gold: #d4a72c;
+      --orange: #f58220;
+      --light: #f4f7fc;
+      --white: #ffffff;
+      --text: #172b4d;
+      --muted: #68778d;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      color: var(--text);
+      background: var(--light);
+      padding-bottom: 78px;
+    }
+
+    button, input { font: inherit; }
+
+    .topbar {
+      background: var(--navy);
+      color: white;
+      padding: 17px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 4px solid var(--gold);
+    }
+
+    .brand { font-size: 19px; font-weight: 800; }
+    .brand span { color: var(--gold); }
+    .tagline { font-size: 11px; color: #dbe7ff; margin-top: 3px; }
+
+    .install {
+      background: var(--orange);
+      color: white;
+      border: 0;
+      border-radius: 9px;
+      padding: 10px 12px;
+      font-size: 12px;
+      font-weight: bold;
+      display: none;
+    }
+
+    main { max-width: 700px; margin: auto; }
+
+    .hero {
+      background: linear-gradient(140deg, #102a56, #174b8f 70%, #d97719);
+      color: white;
+      padding: 35px 22px 30px;
+      border-radius: 0 0 22px 22px;
+    }
+
+    .badge {
+      display: inline-block;
+      background: rgba(255,255,255,.14);
+      border: 1px solid rgba(255,255,255,.25);
+      border-radius: 30px;
+      padding: 6px 11px;
+      font-size: 11px;
+      letter-spacing: .4px;
+    }
+
+    h1 { font-size: 31px; line-height: 1.17; margin: 18px 0 12px; }
+    .hero p { color: #e6efff; font-size: 14px; line-height: 1.6; }
+
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
+
+    .btn {
+      border: 0;
+      border-radius: 9px;
+      padding: 12px 15px;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 13px;
+      display: inline-block;
+      cursor: pointer;
+    }
+
+    .btn-gold { background: var(--gold); color: #172b4d; }
+    .btn-light { background: white; color: var(--navy); }
+
+    section { padding: 23px 17px 0; }
+    .section-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    h2 { font-size: 19px; margin: 0 0 6px; }
+    .subtext { color: var(--muted); font-size: 12px; margin: 0 0 14px; }
+
+    .searchbox {
+      display: flex;
+      gap: 8px;
+      margin-top: 20px;
+    }
+
+    .searchbox input {
+      min-width: 0;
+      flex: 1;
+      padding: 13px;
+      border: 1px solid #d5deec;
+      border-radius: 10px;
+      outline-color: var(--blue);
+      background: white;
+    }
+
+    .searchbox button {
+      border: 0;
+      border-radius: 10px;
+      background: var(--orange);
+      color: white;
+      font-weight: bold;
+      padding: 0 15px;
+    }
+
+    .quick-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 11px;
+    }
+
+    .quick-card, .business-card, .spotlight {
+      background: white;
+      border: 1px solid #e1e8f2;
+      border-radius: 13px;
+      padding: 15px;
+      box-shadow: 0 3px 12px rgba(16,42,86,.04);
+    }
+
+    .quick-card { text-align: left; cursor: pointer; color: var(--text); }
+    .quick-icon { font-size: 24px; }
+    .quick-card h3 { font-size: 14px; margin: 9px 0 4px; }
+    .quick-card p { color: var(--muted); font-size: 11px; line-height: 1.5; margin: 0; }
+
+    .spotlight {
+      background: #fffaf0;
+      border-color: #f0d99b;
+    }
+
+    .spotlight-label { color: #946b00; font-size: 11px; font-weight: bold; text-transform: uppercase; }
+    .spotlight h3 { margin: 7px 0; font-size: 16px; }
+    .spotlight p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.6; }
+
+    #businessList { display: grid; gap: 10px; }
+    .business-card h3 { font-size: 15px; margin: 0 0 6px; }
+    .business-card p { font-size: 12px; color: var(--muted); line-height: 1.5; margin: 5px 0; }
+    .category { color: var(--blue) !important; font-weight: bold; }
+
+    .status { color: var(--muted); font-size: 13px; line-height: 1.6; padding: 13px 0; }
+    .error { color: #a32626; }
+    .footer { text-align: center; padding: 25px 15px; color: var(--muted); font-size: 11px; }
+
+    .bottom-nav {
+      position: fixed;
+      z-index: 5;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: space-around;
+      padding: 9px 4px calc(9px + env(safe-area-inset-bottom));
+      background: white;
+      border-top: 1px solid #dce4ef;
+    }
+
+    .bottom-nav a {
+      text-decoration: none;
+      color: var(--muted);
+      text-align: center;
+      font-size: 10px;
+      min-width: 52px;
+    }
+
+    .bottom-nav a span { display: block; font-size: 19px; margin-bottom: 3px; }
+    .bottom-nav a.active { color: var(--blue); font-weight: bold; }
+
+    @media (min-width: 600px) {
+      .hero { border-radius: 0 0 24px 24px; padding: 45px 30px; }
+      h1 { font-size: 39px; }
+      section { padding-left: 25px; padding-right: 25px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <div class="brand">WorldLink <span>Business</span></div>
+      <div class="tagline">Advertise. Promote. Grow.</div>
+    </div>
+    <button class="install" id="installButton">Install app</button>
+  </header>
+
+  <main>
+    <section class="hero" id="home">
+      <span class="badge">YOUR GATEWAY TO GLOBAL BUSINESS</span>
+      <h1>Discover opportunities. Grow without borders.</h1>
+      <p>Find businesses, connect with potential customers, and discover new opportunities around the world.</p>
+      <div class="hero-actions">
+        <a class="btn btn-gold" href="#discover">Discover businesses</a>
+        <a class="btn btn-light" href="/register.html">List your business</a>
+      </div>
+      <form class="searchbox" id="searchForm">
+        <input id="searchInput" type="search" placeholder="Business name or category" aria-label="Search businesses">
+        <button type="submit">Search</button>
+      </form>
+    </section>
+
+    <section id="explore">
+      <div class="section-heading"><h2>Explore WorldLink</h2></div>
+      <p class="subtext">Tools to help your business reach further.</p>
+      <div class="quick-grid">
+        <button class="quick-card" data-target="discover">
+          <div class="quick-icon">🌍</div><h3>Discover</h3>
+          <p>Explore businesses and services.</p>
+        </button>
+        <button class="quick-card" data-href="/advertising.html">
+          <div class="quick-icon">📢</div><h3>Advertise</h3>
+          <p>Explore business promotion options.</p>
+        </button>
+        <button class="quick-card" data-href="/marketing.html">
+          <div class="quick-icon">📈</div><h3>Marketing</h3>
+          <p>Discover ways to grow your reach.</p>
+        </button>
+        <button class="quick-card" data-href="/marketplace-rules.html">
+          <div class="quick-icon">🛍️</div><h3>Marketplace</h3>
+          <p>Marketplace development starts here.</p>
+        </button>
+      </div>
+    </section>
+
+    <section id="spotlight">
+      <div class="section-heading"><h2>WorldLink Spotlight</h2></div>
+      <p class="subtext">Featured business promotions.</p>
+      <div class="spotlight">
+        <div class="spotlight-label">⭐ Business spotlight</div>
+        <h3>Great businesses deserve to be discovered.</h3>
+        <p>Spotlight promotion features will be connected after the account system and moderation workflow are ready.</p>
+      </div>
+    </section>
+
+    <section id="discover">
+      <div class="section-heading"><h2>Discover businesses</h2></div>
+      <p class="subtext">Browse available listings from the WorldLink directory.</p>
+      <div id="businessList" aria-live="polite"><div class="status">Loading businesses…</div></div>
+    </section>
+
+    <section id="account">
+      <div class="section-heading"><h2>Grow with WorldLink</h2></div>
+      <p class="subtext">Start with a business listing or learn about our promotion services.</p>
+      <div class="quick-grid">
+        <a class="quick-card" href="/register.html" style="text-decoration:none">
+          <div class="quick-icon">🏢</div><h3>List a business</h3><p>Submit your business details.</p>
+        </a>
+        <a class="quick-card" href="/pricing.html" style="text-decoration:none">
+          <div class="quick-icon">💼</div><h3>Pricing</h3><p>Review listing and promotion options.</p>
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">© <span id="year"></span> WorldLink Business · Advertise. Promote. Grow.</footer>
+
+  <nav class="bottom-nav" aria-label="Main navigation">
+    <a href="#home" class="active"><span>🏠</span>Home</a>
+    <a href="#discover"><span>🔎</span>Discover</a>
+    <a href="/advertising.html"><span>📢</span>Advertise</a>
+    <a href="#spotlight"><span>⭐</span>Spotlight</a>
+    <a href="#account"><span>👤</span>Account</a>
+  </nav>
+
+  <script>
+    const API_URL = "https://world-business.onrender.com/api/businesses";
+    const list = document.getElementById("businessList");
+    const searchInput = document.getElementById("searchInput");
+    let businesses = [];
+
+    document.getElementById("year").textContent = new Date().getFullYear();
+
+    function escapeHTML(value) {
+      return String(value ?? "").replace(/[&<>"']/g, char => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;",
+        '"': "&quot;", "'": "&#39;"
+      })[char]);
+    }
+
+    function field(item, ...names) {
+      for (const name of names) {
+        if (item[name] != null) return item[name];
+      }
+      return "";
+    }
+
+    function renderBusinesses(query = "") {
+      const term = query.trim().toLowerCase();
+      const filtered = businesses.filter(item => {
+        const text = [
+          field(item, "business_name", "businessName"),
+          field(item, "category"),
+          field(item, "city"),
+          field(item, "description")
+        ].join(" ").toLowerCase();
+        return text.includes(term);
+      });
+
+      if (!filtered.length) {
+        list.innerHTML = '<div class="status">No matching businesses found. Try another search or check back later.</div>';
+        return;
+      }
+
+      list.innerHTML = filtered.map(item => `
+        <article class="business-card">
+          <h3>${escapeHTML(field(item, "business_name", "businessName") || "Business")}</h3>
+          <p class="category">${escapeHTML(field(item, "category") || "General business")}</p>
+          <p>${escapeHTML(field(item, "city"))}${field(item, "city") ? " · " : ""}${escapeHTML(field(item, "country"))}</p>
+          <p>${escapeHTML(field(item, "description") || "Contact the business to learn more.")}</p>
+          ${field(item, "website") ? `<p><a href="${escapeHTML(field(item, "website"))}" target="_blank" rel="noopener noreferrer">Visit business website</a></p>` : ""}
+        </article>
+      `).join("");
+    }
+
+    async function loadBusinesses() {
+      try {
+        const response = await fetch(API_URL, { headers: { "Accept": "application/json" } });
+        if (!response.ok) throw new Error("The directory is temporarily unavailable.");
+        const data = await response.json();
+        if (!Array.isArray(data)) throw new Error("Unexpected directory response.");
+        businesses = data;
+        renderBusinesses(searchInput.value);
+      } catch (error) {
+        list.innerHTML = '<div class="status error">We could not load businesses right now. Please check your connection and try again.</div><button class="btn btn-gold" id="retryButton">Try again</button>';
+        document.getElementById("retryButton").addEventListener("click", loadBusinesses);
+      }
+    }
+
+    document.getElementById("searchForm").addEventListener("submit", event => {
+      event.preventDefault();
+      renderBusinesses(searchInput.value);
+      document.getElementById("discover").scrollIntoView({ behavior: "smooth" });
+    });
+
+    document.querySelectorAll("[data-target]").forEach(button => {
+      button.addEventListener("click", () => document.getElementById(button.dataset.target).scrollIntoView({ behavior: "smooth" }));
+    });
+
+    document.querySelectorAll("[data-href]").forEach(button => {
+      button.addEventListener("click", () => { window.location.href = button.dataset.href; });
+    });
+
+    document.querySelectorAll(".bottom-nav a").forEach(link => {
+      link.addEventListener("click", () => {
+        document.querySelectorAll(".bottom-nav a").forEach(item => item.classList.remove("active"));
+        link.classList.add("active");
+      });
+    });
+
+    let installPrompt;
+    window.addEventListener("beforeinstallprompt", event => {
+      event.preventDefault();
+      installPrompt = event;
+      document.getElementById("installButton").style.display = "block";
+    });
+
+    document.getElementById("installButton").addEventListener("click", async () => {
+      if (!installPrompt) return;
+      installPrompt.prompt();
+      await installPrompt.userChoice;
+      installPrompt = null;
+      document.getElementById("installButton").style.display = "none";
+    });
+
+    if ("serviceWorker" in navigator && location.protocol === "https:") {
+      window.addEventListener("load", () => navigator.serviceWorker.register("/mobile/sw.js").catch(() => {}));
+    }
+
+    loadBusinesses();
+  </script>
+</body>
+</html>

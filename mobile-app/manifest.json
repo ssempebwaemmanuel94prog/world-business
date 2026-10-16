@@ -1,0 +1,12 @@
+{
+  "id": "/mobile/",
+  "name": "WorldLink Business",
+  "short_name": "WorldLink",
+  "description": "Discover businesses, advertise, promote, and grow worldwide.",
+  "start_url": "/mobile/",
+  "scope": "/mobile/",
+  "display": "standalone",
+  "background_color": "#f4f7fc",
+  "theme_color": "#102a56",
+  "orientation": "portrait"
+}

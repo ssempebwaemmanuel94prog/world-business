@@ -1,6 +1,10 @@
+require("dotenv").config();
+
 const express = require("express");
 const path = require("path");
 const { Pool } = require("pg");
+const session = require("express-session");
+const connectPgSimple = require("connect-pg-simple");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -32,10 +36,44 @@ async function initializeDatabase() {
 }
 
 app.use(express.static(path.join(__dirname, "public")));
+
+// WorldLink Business mobile web app
+app.get("/mobile", (req, res) => {
+  res.redirect(308, "/mobile/");
+});
+
+app.use("/mobile", express.static(path.join(__dirname, "mobile-app"), {
+  index: "index.html"
+}));
 app.use(express.json({ limit: "20kb" }));
 app.use(express.urlencoded({
   extended: false,
   limit: "20kb"
+}));
+
+if (!process.env.SESSION_SECRET) {
+  throw new Error("SESSION_SECRET environment variable is missing.");
+}
+
+app.set("trust proxy", 1);
+
+const PgSession = connectPgSimple(session);
+
+app.use(session({
+  store: new PgSession({
+    pool,
+    tableName: "user_sessions",
+    createTableIfMissing: true
+  }),
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: 7 * 24 * 60 * 60 * 1000
+  }
 }));
 
 

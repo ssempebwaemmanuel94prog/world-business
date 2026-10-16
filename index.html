@@ -163,6 +163,59 @@
       font-size: 15px;
     }
 
+    .spotlight {
+      margin: 0 0 40px;
+      padding: 30px 24px;
+      border: 2px solid #f0b429;
+      border-radius: 18px;
+      background: linear-gradient(135deg, #ffffff, #fff8e6);
+      box-shadow: 0 8px 24px rgba(16, 42, 86, 0.08);
+    }
+
+    .spotlight .section-title {
+      margin-bottom: 24px;
+    }
+
+    .spotlight-empty {
+      max-width: 650px;
+      margin: 0 auto;
+      padding: 28px 20px;
+      border: 1px dashed #c6d3e8;
+      border-radius: 14px;
+      background: #ffffff;
+      text-align: center;
+    }
+
+    .spotlight-icon {
+      margin-bottom: 8px;
+      font-size: 42px;
+    }
+
+    .spotlight-empty h3 {
+      margin-bottom: 10px;
+      color: #102a56;
+      font-size: 23px;
+    }
+
+    .spotlight-empty p {
+      margin: 0 0 20px;
+      color: #52627a;
+    }
+
+    @media (max-width: 600px) {
+      .spotlight {
+        padding: 24px 14px;
+      }
+
+      .spotlight-empty {
+        padding: 24px 14px;
+      }
+
+      .spotlight-empty h3 {
+        font-size: 20px;
+      }
+    }
+
     .directory-preview {
       margin-top: 45px;
       background: white;
@@ -306,6 +359,28 @@
             potential connections and opportunities.
           </p>
         </article>
+      </div>
+    </section>
+
+    <section class="spotlight" aria-labelledby="spotlight-title">
+      <div class="section-title">
+        <h2 id="spotlight-title">🌟 WorldLink 24-Hour Spotlight</h2>
+        <p>
+          Discover special offers and promotions from businesses.
+          Every approved spotlight runs for 24 hours.
+        </p>
+      </div>
+
+      <div class="spotlight-empty" id="spotlight-content" aria-live="polite">
+        <div class="spotlight-icon" aria-hidden="true">📣</div>
+        <h3>Be the First to Spotlight Your Business!</h3>
+        <p>
+          Special business offers will appear here after review and approval.
+          Check back to discover promotions from businesses.
+        </p>
+        <a class="button blue-button" href="/advertising.html">
+          Learn About Advertising
+        </a>
       </div>
     </section>
 
