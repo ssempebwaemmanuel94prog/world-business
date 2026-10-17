@@ -288,6 +288,102 @@
         padding: 55px 18px;
       }
     }
+
+    /* Responsive main website navigation */
+    .site-nav {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .site-nav > a,
+    .site-nav .services-menu > summary {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 14px;
+      cursor: pointer;
+      padding: 8px 4px;
+    }
+
+    .site-nav > a:hover,
+    .site-nav .services-menu > summary:hover {
+      text-decoration: underline;
+    }
+
+    .site-nav .services-menu {
+      position: relative;
+    }
+
+    .site-nav .services-menu > summary {
+      list-style: none;
+    }
+
+    .site-nav .services-menu > summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .site-nav .services-menu > summary::after {
+      content: " ▾";
+    }
+
+    .site-nav .services-dropdown {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      z-index: 20;
+      min-width: 160px;
+      padding: 8px;
+      background: #102a56;
+      border: 1px solid rgba(255,255,255,.25);
+      border-radius: 8px;
+      box-shadow: 0 8px 20px rgba(0,0,0,.2);
+    }
+
+    .site-nav .services-dropdown a {
+      display: block;
+      padding: 10px;
+      color: white;
+      text-decoration: none;
+      border-radius: 5px;
+    }
+
+    .site-nav .services-dropdown a:hover {
+      background: rgba(255,255,255,.14);
+    }
+
+    .site-nav > .nav-register {
+      padding: 10px 12px;
+      color: #102a56;
+      background: #f5c451;
+      border-radius: 7px;
+      text-align: center;
+    }
+
+    .site-nav a:focus-visible,
+    .site-nav summary:focus-visible {
+      outline: 3px solid #f5c451;
+      outline-offset: 3px;
+    }
+
+    @media (max-width: 760px) {
+      header {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .site-nav {
+        justify-content: center;
+        gap: 8px 12px;
+      }
+
+      .site-nav .services-dropdown {
+        left: 50%;
+        transform: translateX(-50%);
+      }
+    }
+
   </style>
 </head>
 
@@ -295,10 +391,19 @@
   <header>
     <div class="logo">🌍 WorldLink Business</div>
 
-    <nav aria-label="Main navigation">
+    <nav class="site-nav" aria-label="Main navigation">
       <a href="/">Home</a>
       <a href="/businesses.html">Explore Businesses</a>
-      <a href="/register.html">Register Your Business</a>
+      <details class="services-menu">
+        <summary>Business Services</summary>
+        <div class="services-dropdown">
+          <a href="/advertising.html">Advertising</a>
+          <a href="/marketing.html">Marketing</a>
+          <a href="/pricing.html">Pricing</a>
+        </div>
+      </details>
+      <a href="/contact.html">Contact Us</a>
+      <a class="nav-register" href="/register.html">Register Your Business</a>
     </nav>
   </header>
 
