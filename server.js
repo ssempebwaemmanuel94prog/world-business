@@ -129,7 +129,7 @@ app.get("/api/businesses", async (req, res) => {
     const result = await pool.query(`
       SELECT id, business_name, country, city,
              category, description, website,
-             business_email, business_phone, contact_person,
+             business_email, business_phone,
              created_at
       FROM businesses
       ORDER BY id DESC
