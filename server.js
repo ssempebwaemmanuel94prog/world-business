@@ -5,17 +5,12 @@ const path = require("path");
 const { Pool } = require("pg");
 const session = require("express-session");
 const connectPgSimple = require("connect-pg-simple");
+const { createProductionDatabaseConfig } = require("./scripts/database-config");
+const PgSession = connectPgSimple(session);
 
-const app = express();
-const PORT = process.env.PORT || 3000;
 const HOST = "0.0.0.0";
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false }
-});
-
-async function initializeDatabase() {
+async function initializeDatabase(pool, logger = console) {
   await pool.query(`
     CREATE TABLE IF NOT EXISTS businesses (
       id BIGSERIAL PRIMARY KEY,
@@ -32,8 +27,28 @@ async function initializeDatabase() {
     )
   `);
 
-  console.log("Neon PostgreSQL businesses table is ready.");
+  logger.log("Neon PostgreSQL businesses table is ready.");
 }
+
+function createApplication({
+  pool,
+  sessionSecret,
+  nodeEnv = process.env.NODE_ENV,
+  sessionStoreFactory = sharedPool => new PgSession({
+    pool: sharedPool,
+    tableName: "user_sessions",
+    createTableIfMissing: true
+  })
+} = {}) {
+  if (!pool || typeof pool.query !== "function") {
+    throw new TypeError("A valid database pool is required.");
+  }
+
+  if (typeof sessionSecret !== "string" || sessionSecret.length === 0) {
+    throw new Error("SESSION_SECRET environment variable is missing.");
+  }
+
+  const app = express();
 
 app.use(express.static(path.join(__dirname, "public")));
 
@@ -51,26 +66,16 @@ app.use(express.urlencoded({
   limit: "20kb"
 }));
 
-if (!process.env.SESSION_SECRET) {
-  throw new Error("SESSION_SECRET environment variable is missing.");
-}
-
 app.set("trust proxy", 1);
 
-const PgSession = connectPgSimple(session);
-
 app.use(session({
-  store: new PgSession({
-    pool,
-    tableName: "user_sessions",
-    createTableIfMissing: true
-  }),
-  secret: process.env.SESSION_SECRET,
+  store: sessionStoreFactory(pool),
+  secret: sessionSecret,
   resave: false,
   saveUninitialized: false,
   cookie: {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: nodeEnv === "production",
     sameSite: "lax",
     maxAge: 7 * 24 * 60 * 60 * 1000
   }
@@ -287,21 +292,67 @@ app.post("/api/businesses", async (req, res) => {
   }
 });
 
-async function startServer() {
+  return app;
+}
+
+async function startServer({
+  env = process.env,
+  PoolClass = Pool,
+  listen = (application, port, host, callback) =>
+    application.listen(port, host, callback),
+  logger = console,
+  sessionStoreFactory
+} = {}) {
+  if (typeof env.SESSION_SECRET !== "string" || env.SESSION_SECRET.length === 0) {
+    throw new Error("SESSION_SECRET environment variable is missing.");
+  }
+
+  const databaseConfig = createProductionDatabaseConfig(env.DATABASE_URL);
+  const pool = new PoolClass(databaseConfig);
+
   try {
-    if (!process.env.DATABASE_URL) {
-      throw new Error("DATABASE_URL environment variable is missing.");
+    const appOptions = {
+      pool,
+      sessionSecret: env.SESSION_SECRET,
+      nodeEnv: env.NODE_ENV
+    };
+
+    if (sessionStoreFactory) {
+      appOptions.sessionStoreFactory = sessionStoreFactory;
     }
 
-    await initializeDatabase();
+    const app = createApplication(appOptions);
 
-    app.listen(PORT, HOST, () => {
-      console.log(`Backend running at http://${HOST}:${PORT}`);
+    await initializeDatabase(pool, logger);
+
+    const port = env.PORT || 3000;
+    const server = listen(app, port, HOST, () => {
+      logger.log(`Backend running at http://${HOST}:${port}`);
     });
+
+    return { app, pool, server };
   } catch (error) {
-    console.error("Server startup failed:", error.message);
-    process.exit(1);
+    if (typeof pool.end === "function") {
+      try {
+        await pool.end();
+      } catch {
+        // Preserve the original startup error.
+      }
+    }
+
+    throw error;
   }
 }
 
-startServer();
+if (require.main === module) {
+  startServer().catch(error => {
+    console.error("Server startup failed:", error.message);
+    process.exitCode = 1;
+  });
+}
+
+module.exports = {
+  createApplication,
+  initializeDatabase,
+  startServer
+};
